@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.12.0'
+}
+
+
+group 'com.merge.check.designer'
+version '1.0.1'
+
+sourceCompatibility = 1.8
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
+sourceSets.main.resources {
+    srcDirs = ['src/main/java', 'src/main/resources']
+    include '**/*.xml'
+    include '**/*.png'
+    include '**/*.ico'
+    include '**/*.gif'
+}
+
+allprojects {
+
+    dependencies {
+        implementation fileTree(dir: 'libs', includes: ['*.jar'])
+    }
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version = '2022.3'
+    type = 'IU'
+    plugins = ['java','Git4Idea']
+}
+patchPluginXml {
+    changeNotes = """
+      <em>1.0.0 首发版本</em><br>
+      1. 首发版本 <br>
+      
+      """
+
+    sinceBuild = '162.*'
+    untilBuild = '231.*'
+}

@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>com.merge.check.designer</id>
+    <name>merge-check idea设计器</name>
+    <version>1.0.1</version>
+    <vendor email="2512915790@qq.com" url="https://github.com/SongTing0711/mergecheck-idea-designer.git">tingmailang</vendor>
+
+    <description><![CDATA[
+      目前merge-check idea插件支持合并丢失代码检查，包括远程丢失与本地丢失<br>
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="141.0"/>
+    <projectListeners>
+        <listener class="com.merge.check.idea.MergeConflictFilesListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
+    <depends>com.intellij.modules.java</depends>
+
+</idea-plugin>
