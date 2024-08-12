@@ -12,11 +12,10 @@ import com.google.common.cache.CacheBuilder;
  */
 
 public class CacheUtil {
-    public static volatile Cache<String, String> PROJECT_ConnECT_CACHE =
-            CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(30)).maximumSize(100).build();
+    public static volatile Cache<String, String> AVOID_REPEAT_CONFLICT_CACHE =
+        CacheBuilder.newBuilder().expireAfterWrite(Duration.ofSeconds(10)).build();;
 
     public static volatile Cache<String, String> PROJECT_CONFLICT_CACHE =
         CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(30)).maximumSize(100).build();
-
 
 }

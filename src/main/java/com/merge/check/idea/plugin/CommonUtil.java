@@ -1,9 +1,5 @@
 package com.merge.check.idea.plugin;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,8 +14,8 @@ public class CommonUtil {
 
     public static final String CONFLICT_MARK_END = ">>>>>>>";
 
-    public static final String AFTER = "AFTER";
-    public static final String BEFORE = "BEFORE";
+    public static final String CONFLICT = "CONFLICT";
 
     public static final String LINE_BREAK = "\n";
+    public static final String JAVA = "java";
 }

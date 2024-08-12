@@ -6,8 +6,10 @@ package com.merge.check.idea;
  * @Description :
  */
 
-import com.intellij.openapi.vcs.VcsListener;
-import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vfs.VirtualFileEvent;
+import com.intellij.openapi.vfs.VirtualFileListener;
 import com.merge.check.idea.plugin.CacheUtil;
 import com.merge.check.idea.plugin.CommonUtil;
 import com.merge.check.idea.plugin.dialog.MergeConflictDialog;
@@ -24,11 +26,6 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
-import git4idea.GitVcs;
-import git4idea.commands.GitHandler;
-import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryChangeListener;
-import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -73,10 +70,32 @@ public class MergeConflictFilesListener implements ProjectManagerListener {
         // 获取变更列表管理器
         ChangeListManager changeListManager = ChangeListManager.getInstance(project);
 
-        connection.subscribe(GitRepository.GIT_REPO_CHANGE, new GitRepositoryChangeListener() {
+        VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileListener() {
             @Override
-            public void repositoryChanged(@NotNull GitRepository repository) {
-                log.info(project.getName() + " merge-check repositoryChanged " + repository.getCurrentBranchName());
+            public void contentsChanged(@NotNull VirtualFileEvent event) {
+                VirtualFile file = event.getFile();
+                if (file == null) {
+                    return;
+                }
+                if (!CommonUtil.JAVA.equals(file.getExtension())) {
+                    return;
+                }
+                String key = project.getName() + file.getPath() + CommonUtil.CONFLICT;
+                if (CacheUtil.AVOID_REPEAT_CONFLICT_CACHE.getIfPresent(key) != null) {
+                    return;
+                }
+                Document document = FileDocumentManager.getInstance().getDocument(file);
+                if (document == null) {
+                    return;
+                }
+                String newContent = document.getText();
+                if (newContent.contains(CommonUtil.CONFLICT_MARK)
+                    && newContent.contains(CommonUtil.CONFLICT_MARK_END)) {
+                    CacheUtil.AVOID_REPEAT_CONFLICT_CACHE.put(key, newContent);
+                    log.info(
+                        project.getName() + " merge-check after newContent contains conflict mark: " + file.getPath());
+                    CacheUtil.PROJECT_CONFLICT_CACHE.put(key, newContent);
+                }
             }
         });
         connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
@@ -98,7 +117,7 @@ public class MergeConflictFilesListener implements ProjectManagerListener {
             if (file == null) {
                 continue;
             }
-            if (!"java".equals(file.getExtension())) {
+            if (!CommonUtil.JAVA.equals(file.getExtension())) {
                 continue;
             }
             log.info(project.getName() + " merge-check change file " + file.getName());
@@ -128,25 +147,32 @@ public class MergeConflictFilesListener implements ProjectManagerListener {
                 log.info(project.getName() + " merge-check after content is null");
                 continue;
             }
-            if (afterContent.contains(CommonUtil.CONFLICT_MARK)) {
-                log.info(project.getName() + " merge-check after content:" + afterContent);
-                log.info(project.getName() + " merge-check after content contains conflict mark");
-                cacheConflict(beforeRevision, project, file, afterContent);
-            } else {
-                log.info(project.getName() + " merge-check after content not contains conflict mark");
-                String afterKey = project.getName() + file.getPath() + CommonUtil.AFTER;
-                String afterContentCache = CacheUtil.PROJECT_CONFLICT_CACHE.getIfPresent(afterKey);
-                if (afterContentCache == null) {
-                    log.info(project.getName() + " merge-check afterContentCache is null");
+            String conflictKey = project.getName() + file.getPath() + CommonUtil.CONFLICT;
+            String conflictContentCache = CacheUtil.PROJECT_CONFLICT_CACHE.getIfPresent(conflictKey);
+            if (conflictContentCache == null) {
+                log.info(project.getName() + " merge-check conflictContentCache is null");
+                continue;
+            }
+            String beforeContent = null;
+            if (beforeRevision != null) {
+                try {
+                    beforeContent = beforeRevision.getContent();
+                } catch (VcsException e) {
+                    log.error(project.getName() + " merge-check get before content error", e.getMessage());
                     continue;
                 }
-                log.info(project.getName() + " merge-check after content:" + afterContent);
-                String beforeKey = project.getName() + file.getPath() + CommonUtil.BEFORE;
-                String beforeContentCache = CacheUtil.PROJECT_CONFLICT_CACHE.getIfPresent(beforeKey);
+            }
+            if (beforeContent == null) {
+                log.info(project.getName() + " merge-check before content is null");
+                continue;
+            }
+            if (!afterContent.contains(CommonUtil.CONFLICT_MARK)
+                && !afterContent.contains(CommonUtil.CONFLICT_MARK_END)) {
+                log.info(project.getName() + " merge-check after content not contains conflict mark");
 
-                CacheUtil.PROJECT_CONFLICT_CACHE.invalidate(beforeKey);
-                CacheUtil.PROJECT_CONFLICT_CACHE.invalidate(afterKey);
-                findMissingLines(project, file.getPath(), beforeContentCache, afterContentCache, afterContent);
+                log.info(project.getName() + " merge-check after content:" + afterContent);
+                CacheUtil.PROJECT_CONFLICT_CACHE.invalidate(conflictContentCache);
+                findMissingLines(project, file.getName(), beforeContent, conflictContentCache, afterContent);
             }
 
         }
@@ -192,29 +218,10 @@ public class MergeConflictFilesListener implements ProjectManagerListener {
         if (!remoteMissingLines.isEmpty() || !localMissingLines.isEmpty()) {
             log.info(file + " merge-check show dialog");
             ApplicationManager.getApplication().invokeLater(() -> {
-                MergeConflictDialog dialog = new MergeConflictDialog(project, remoteText, localText);
+                MergeConflictDialog dialog = new MergeConflictDialog(file, project, remoteText, localText);
                 dialog.show();
             });
         }
     }
 
-    private void cacheConflict(ContentRevision beforeRevision, Project project, VirtualFile file, String afterContent) {
-        // 获取变更前的代码内容
-        String beforeContent = null;
-        if (beforeRevision != null) {
-            try {
-                beforeContent = beforeRevision.getContent();
-            } catch (VcsException e) {
-                log.error(project.getName() + " merge-check get before content error", e.getMessage());
-                return;
-            }
-        }
-        if (beforeContent == null) {
-            log.info(project.getName() + " merge-check before content is null");
-            return;
-        }
-        log.info(project.getName() + " merge-check cacheConflict " + beforeContent);
-        CacheUtil.PROJECT_CONFLICT_CACHE.put(project.getName() + file.getPath() + CommonUtil.BEFORE, beforeContent);
-        CacheUtil.PROJECT_CONFLICT_CACHE.put(project.getName() + file.getPath() + CommonUtil.AFTER, afterContent);
-    }
 }

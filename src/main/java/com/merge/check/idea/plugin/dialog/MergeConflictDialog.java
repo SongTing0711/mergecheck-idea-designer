@@ -25,9 +25,10 @@ public class MergeConflictDialog extends DialogWrapper {
     private Editor remoteEditor;
     private Editor localEditor;
 
-    public MergeConflictDialog(Project project, String remoteMissingLinesText, String localMissingLinesText) {
+    public MergeConflictDialog(String file, Project project, String remoteMissingLinesText,
+        String localMissingLinesText) {
         super(project);
-        setTitle("合并丢失");
+        setTitle(file + "合并丢失");
         this.project = project;
         this.remoteMissingLinesText = remoteMissingLinesText;
         this.localMissingLinesText = localMissingLinesText;

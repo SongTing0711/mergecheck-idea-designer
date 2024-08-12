@@ -10,10 +10,10 @@
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141.0"/>
-    <projectListeners>
+    <applicationListeners>
         <listener class="com.merge.check.idea.MergeConflictFilesListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
+    </applicationListeners>
     <depends>com.intellij.modules.java</depends>
 
 </idea-plugin>
