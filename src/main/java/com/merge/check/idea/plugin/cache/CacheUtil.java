@@ -1,4 +1,4 @@
-package com.merge.check.idea.plugin;
+package com.merge.check.idea.plugin.cache;
 
 import java.time.Duration;
 

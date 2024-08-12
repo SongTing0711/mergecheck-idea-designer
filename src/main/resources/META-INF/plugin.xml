@@ -11,7 +11,7 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141.0"/>
     <applicationListeners>
-        <listener class="com.merge.check.idea.MergeConflictFilesListener"
+        <listener class="com.merge.check.idea.plugin.listener.ProjectListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
     <depends>com.intellij.modules.java</depends>
