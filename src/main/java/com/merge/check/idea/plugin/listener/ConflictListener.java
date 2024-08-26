@@ -29,21 +29,18 @@ public class ConflictListener implements VirtualFileListener {
         if (file == null) {
             return;
         }
-        log.info(" merge-check contentsChanged: " + file.getPath());
         if (!CommonUtil.JAVA.equals(file.getExtension())) {
             return;
         }
         Project project = ProjectLocator.getInstance().guessProjectForFile(file);
         String key = project.getName() + file.getPath() + CommonUtil.CONFLICT;
         if (CacheUtil.AVOID_REPEAT_CONFLICT_CACHE.getIfPresent(key) != null) {
-            log.info("merge-check AVOID_REPEAT_CONFLICT_CACHE: " + file.getPath());
             return;
         }
         Document document = FileDocumentManager.getInstance().getDocument(file);
         if (document == null) {
             return;
         }
-        log.info("merge-check document: " + file.getPath());
         String newContent = document.getText();
         if (newContent.contains(CommonUtil.CONFLICT_MARK) && newContent.contains(CommonUtil.CONFLICT_MARK_END)) {
             CacheUtil.AVOID_REPEAT_CONFLICT_CACHE.put(key, newContent);

@@ -1,7 +1,8 @@
-package com.merge.check.idea.plugin.listener;
+package com.merge.check.idea.plugin;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.merge.check.idea.plugin.listener.ConflictListener;
 
 /**
  * @Author : song hao

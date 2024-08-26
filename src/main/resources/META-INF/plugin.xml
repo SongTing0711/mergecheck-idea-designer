@@ -19,7 +19,7 @@
     <!-- 项目级别服务 -->
     <project-components>
         <component>
-            <implementation-class>com.merge.check.idea.plugin.listener.MergeCheckProjectComponent</implementation-class>
+            <implementation-class>com.merge.check.idea.plugin.MergeCheckProjectComponent</implementation-class>
         </component>
     </project-components>
     <depends>com.intellij.modules.java</depends>
