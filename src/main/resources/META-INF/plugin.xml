@@ -1,19 +1,28 @@
 <idea-plugin>
     <id>com.merge.check.designer</id>
-    <name>merge-check idea设计器</name>
+    <name>merge-check</name>
     <version>1.0.1</version>
     <vendor email="2512915790@qq.com" url="https://github.com/SongTing0711/mergecheck-idea-designer.git">tingmailang</vendor>
 
     <description><![CDATA[
-      目前merge-check idea插件支持合并丢失代码检查，包括远程丢失与本地丢失<br>
+      mergecheck是一款Idea插件。
+      可以进行合并代码冲突时，丢失JAVA代码的检查，包括远程丢失与本地丢失
+      检查过程中会判断是否主观添加，避免远程删除历史代码的误报。
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141.0"/>
     <applicationListeners>
-        <listener class="com.merge.check.idea.plugin.listener.ProjectListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+        <listener class="com.merge.check.idea.plugin.listener.ChangeListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
+    <!-- 项目级别服务 -->
+    <project-components>
+        <component>
+            <implementation-class>com.merge.check.idea.plugin.listener.MergeCheckProjectComponent</implementation-class>
+        </component>
+    </project-components>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.platform</depends>
 
 </idea-plugin>

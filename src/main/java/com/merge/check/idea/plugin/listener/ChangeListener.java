@@ -2,6 +2,8 @@ package com.merge.check.idea.plugin.listener;
 
 import java.util.List;
 
+import com.intellij.openapi.project.ProjectLocator;
+import com.intellij.openapi.project.ProjectManager;
 import com.merge.check.idea.plugin.handler.MissingHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,30 +26,20 @@ import com.merge.check.idea.plugin.common.CommonUtil;
  * @CreateTime : 2024/07/04 19:30
  * @Description :
  */
-public class ChangeListener {
+public class ChangeListener implements BulkFileListener {
     private static final Logger log = Logger.getInstance(ChangeListener.class);
 
-    public static void handle(Project project) {
+    @Override
+    public void after(@NotNull List<? extends VFileEvent> events) {
+        try {
+            fileChange(events);
+        } catch (Exception e) {
+            log.error(" merge-check BulkFileListener error", e.getMessage());
+        }
 
-        MessageBusConnection connection = project.getMessageBus().connect();
-        // 获取变更列表管理器
-        ChangeListManager changeListManager = ChangeListManager.getInstance(project);
-
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
-            @Override
-            public void after(@NotNull List<? extends VFileEvent> events) {
-                try {
-                    fileChange(project, events, changeListManager);
-                } catch (Exception e) {
-                    log.error(project.getName() + " merge-check BulkFileListener error", e.getMessage());
-                }
-
-            }
-        });
     }
 
-    private static void fileChange(Project project, List<? extends VFileEvent> events,
-        ChangeListManager changeListManager) {
+    private static void fileChange(List<? extends VFileEvent> events) {
         for (VFileEvent event : events) {
             VirtualFile file = event.getFile();
             if (file == null) {
@@ -56,7 +48,10 @@ public class ChangeListener {
             if (!CommonUtil.JAVA.equals(file.getExtension())) {
                 continue;
             }
+            Project project = ProjectLocator.getInstance().guessProjectForFile(file);
             log.info(project.getName() + " merge-check change file " + file.getName());
+            // 获取变更列表管理器
+            ChangeListManager changeListManager = ChangeListManager.getInstance(project);
             Change change = changeListManager.getChange(file);
             if (change == null) {
                 log.info(project.getName() + " merge-check change is null");
