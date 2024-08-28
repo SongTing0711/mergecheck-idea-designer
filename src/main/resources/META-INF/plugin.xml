@@ -1,13 +1,11 @@
 <idea-plugin>
     <id>com.merge.check.designer</id>
     <name>merge-check</name>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <vendor email="2512915790@qq.com" url="https://github.com/SongTing0711/mergecheck-idea-designer.git">tingmailang</vendor>
 
     <description><![CDATA[
-      mergecheck是一款Idea插件。
-      可以进行合并代码冲突时，丢失JAVA代码的检查，包括远程丢失与本地丢失
-      检查过程中会判断是否主观添加，避免远程删除历史代码的误报。
+      merge-check can detect the issue of code merging loss. When merging code conflicts, it is easy to miss the code. merge-check will automatically detect the lost code and provide prompts<br>
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
