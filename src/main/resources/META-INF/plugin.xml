@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.merge.check.designer</id>
     <name>merge-check</name>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <vendor email="2512915790@qq.com" url="https://github.com/SongTing0711/mergecheck-idea-designer.git">tingmailang</vendor>
 
     <description><![CDATA[

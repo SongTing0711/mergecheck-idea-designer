@@ -5,7 +5,7 @@ plugins {
 
 
 group 'com.merge.check.designer'
-version '1.0.2'
+version '1.0.3'
 
 sourceCompatibility = 1.8
 
@@ -44,9 +44,11 @@ patchPluginXml {
     changeNotes = """
       <em>1.0.0 首发版本</em><br>
       1. 首发版本 <br>
+      <br>
+      2. 适配高版本idea <br>
       
       """
 
     sinceBuild = '162.*'
-    untilBuild = '231.*'
+    untilBuild = '241.*'
 }
